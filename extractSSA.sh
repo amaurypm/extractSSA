@@ -91,7 +91,31 @@ for file in "$@"; do
                 s/<font[^>]*>//gI;
                 s/<\/font>//gI;
                 s/\{[^}]*\}//g
-            ' > "$outfile"
+            ' | \
+            sed -E '
+                s|^m [0-9 .lmb-]+$||g;
+                s|^<b>m [0-9 .lmb-]+</b>$||g;
+            ' | \
+            awk '
+                BEGIN { RS=""; FS="\n" }
+                {
+                    # Reconstruct block content, stripping any empty lines within it
+                    body = ""
+                    for (i=3; i<=NF; i++) {
+                        if ($i !~ /^[[:space:]]*$/) {
+                            body = body $i "\n"
+                        }
+                    }
+
+                    # If the block has both a timer and actual text, output it
+                    if (body != "") {
+                        count++
+                        print count
+                        print $2
+                        printf "%s", body
+                    }
+                }
+                ' > "$outfile"
     done
 
     unset name_counts
