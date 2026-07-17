@@ -93,8 +93,9 @@ for file in "$@"; do
                 s/\{[^}]*\}//g
             ' | \
             sed -E '
-                s|^m [0-9 .lmb-]+$||g;
-                s|^<b>m [0-9 .lmb-]+</b>$||g;
+                s|^m .+$||g;
+                s|^<b>m .+</b>$||g;
+                s|^<b></b>m .+$||g;
             ' | \
             awk '
                 BEGIN { RS=""; FS="\n" }
