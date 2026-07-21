@@ -90,12 +90,12 @@ for file in "$@"; do
                 s/<font[^>]*>//gI;
                 s/<\/font>//gI;
                 s/\{[^}]*\}//g;
-                s/(\\h)+/ /g
+                s/(\\h)+/ /g;
+                s/\\N/\n/g;
+                s/\\n/ /g
             ' | \
             sed -E '
-                s|^m .+$||g;
-                s|^<b>m .+</b>$||g;
-                s|^<b></b>m .+$||g;
+                s|^(<[^>]+>)*[[:space:]]*m[[:space:]]+[-]?[0-9].*$||gI
             ' | \
             awk '
                 BEGIN { RS=""; FS="\n" }
