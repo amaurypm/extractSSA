@@ -85,12 +85,12 @@ for file in "$@"; do
 
         echo "-> Extracting subtitle stream $track_idx (codec: $codec, lang: $lang) to: $outfile"
         
-
         ffmpeg -y -v error -i "$file" -map "0:s:${track_idx}" -f srt - | \
             sed -E '
                 s/<font[^>]*>//gI;
                 s/<\/font>//gI;
-                s/\{[^}]*\}//g
+                s/\{[^}]*\}//g;
+                s/(\\h)+/ /g
             ' | \
             sed -E '
                 s|^m .+$||g;
@@ -103,6 +103,9 @@ for file in "$@"; do
                     # Reconstruct block content, stripping any empty lines within it
                     body = ""
                     for (i=3; i<=NF; i++) {
+                        # Strip DOS line endings if FFmpeg outputs \r\n
+                        sub(/\r$/, "", $i)
+                        
                         if ($i !~ /^[[:space:]]*$/) {
                             body = body $i "\n"
                         }
@@ -112,8 +115,14 @@ for file in "$@"; do
                     if (body != "") {
                         count++
                         print count
-                        print $2
-                        printf "%s", body
+                        
+                        # Strip potential DOS line ending from timestamp line
+                        timestamp = $2
+                        sub(/\r$/, "", timestamp)
+                        print timestamp
+                        
+                        # Added \n to ensure valid SRT block separation (a blank line)
+                        printf "%s\n", body 
                     }
                 }
                 ' > "$outfile"
